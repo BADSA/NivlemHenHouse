@@ -5,6 +5,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "pthread.h"
+#include <unistd.h>
 
 /* DEFINES */
 #define e 2.718281828459046
@@ -24,7 +25,8 @@ int food_amount = 10, FOOD_MAX = 10;
 int water_amount = 10, WATER_MAX = 10;
 int WATER_COST = 40, FOOD_COST = 100;
 int FOOD_MIN = 2, WATER_MIN = 1;
-int cost;
+int CHICKENS_AMOUNT = 10;
+int cost = 0, eggs_amount = 0;
 
 
 long long fact(int n){
@@ -63,7 +65,7 @@ double getrand10(){
     return (double)rand() / (double)RAND_MAX ;
 }
 
-int wait_time(vd dist){
+int get_wait_time(vd dist){
     double p = getrand10();
     for (int i = 0; i < dist.size(); i++)
         if (p < dist[i]) return i+1;
@@ -118,6 +120,76 @@ void *bot_function(void*){
 }
 
 
+void *eat(void*){
+    int time, amount;
+    while(1){
+        time = get_wait_time(food_dist);
+        sleep(time);
+        amount = ( rand() % (food_amount - FOOD_MIN))+ FOOD_MIN; // Random amount of food.
+        pthread_mutex_lock(&mutex);
+        food_amount -= amount;
+
+        if(food_amount <= FOOD_MIN)
+            pthread_cond_signal(&food_cond); // For the bot to refill it.
+
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+void *drink(void*){
+    int time, amount;
+    while(1){
+        time = get_wait_time(water_dist);
+        sleep(time);
+        amount = ( rand() % (water_amount - WATER_MIN))+ WATER_MIN; // Random amount of food.
+        pthread_mutex_lock(&mutex);
+        water_amount -= amount;
+
+        if(water_amount <= WATER_MIN)
+            pthread_cond_signal(&water_cond); // For the bot to refill it.
+
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+void *swot(void*){
+    int time;
+    while(1){
+        time = get_wait_time(egg_dist);
+        sleep(time);
+        pthread_mutex_lock(&mutex);
+        eggs_amount++;
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+void *chicken_process(void * args){
+    int chick_num = *((int*) args);
+    printf("Creating chicken #%d\n",chick_num);
+    pthread_t eat_thread, drink_thread, swot_thread;
+
+    pthread_create(&eat_thread, NULL, &eat, NULL);
+    pthread_create(&drink_thread, NULL, &drink, NULL);
+    pthread_create(&swot_thread, NULL, &swot, NULL);
+
+    return NULL;
+}
+
+
+void create_chickens(){
+    pthread_t *chickens = (pthread_t*) calloc(CHICKENS_AMOUNT, sizeof(pthread_t));
+    int *id;
+    for (int cn = 0; cn < CHICKENS_AMOUNT; cn++){
+        id = (int*)malloc(sizeof(int));
+        *id = cn+1;
+        pthread_create(&chickens[cn], NULL, &chicken_process, (void *) id);
+    }
+
+}
+
 int main()
 {
 
@@ -133,6 +205,7 @@ int main()
 
     pthread_create(&bot, NULL, &bot_function, NULL);
 
+    create_chickens();
 
     return 0;
 }
