@@ -1,15 +1,10 @@
 #include <iostream>
-#include <time.h>
 #include <vector>
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "pthread.h"
+#include <stdio.h>
+#include "utils/utils.h"
 #include <unistd.h>
-
-/* DEFINES */
-#define e 2.718281828459046
-#define vd vector<double>
+#include <pthread.h>
+#include <map>
 
 using namespace std;
 
@@ -27,51 +22,7 @@ int WATER_COST = 40, FOOD_COST = 100;
 int FOOD_MIN = 2, WATER_MIN = 1;
 int CHICKENS_AMOUNT = 10;
 int cost = 0, eggs_amount = 0;
-
-
-long long fact(int n){
-    long long res = 1;
-    for(int i = 2; i <= n; i++) res *= i;
-    return res;
-}
-
-double calc_poisson(double k, double lambda){
-    return ( (pow(e, 0-lambda) * pow(lambda, k)) / fact(k) );
-}
-
-/*
-    Calcutes poisson's acumulated
-    using the lambda received.
-*/
-vd calcdistr(int lambda){
-    int i = 1;
-    double acum = 0, prob_i;
-    vector<double> dist_acum;
-
-    while(acum < 0.99){
-        prob_i = calc_poisson(i++,lambda);
-        if (acum + prob_i > 1.0 ||
-            acum + prob_i < acum + 0.000001) break; // Stop here
-        acum += prob_i;
-        dist_acum.push_back(acum);
-    }
-    return dist_acum;
-}
-
-/*
-    Generates a random number between 1 and 0.
-*/
-double getrand10(){
-    return (double)rand() / (double)RAND_MAX ;
-}
-
-int get_wait_time(vd dist){
-    double p = getrand10();
-    for (int i = 0; i < dist.size(); i++)
-        if (p < dist[i]) return i+1;
-    return dist.size();
-}
-
+int DAY_DURATION = 168000;
 
 /*
     Keep checking the food to refill it
@@ -120,7 +71,8 @@ void *bot_function(void*){
 }
 
 
-void *eat(void*){
+void *eat(void *args){
+    int chick_num = *((int*) args);
     int time, amount;
     while(1){
         time = get_wait_time(food_dist);
@@ -132,12 +84,14 @@ void *eat(void*){
         if(food_amount <= FOOD_MIN)
             pthread_cond_signal(&food_cond); // For the bot to refill it.
 
+        printf("La gallina %d comio' %d de comida, la cantidad total de comida es: %d \n",chick_num,amount,food_amount);
         pthread_mutex_unlock(&mutex);
     }
     return NULL;
 }
 
-void *drink(void*){
+void *drink(void *args){
+    int chick_num = *((int*) args);
     int time, amount;
     while(1){
         time = get_wait_time(water_dist);
@@ -148,19 +102,21 @@ void *drink(void*){
 
         if(water_amount <= WATER_MIN)
             pthread_cond_signal(&water_cond); // For the bot to refill it.
-
+        printf("La gallina %d tomo' %d agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
         pthread_mutex_unlock(&mutex);
     }
     return NULL;
 }
 
-void *swot(void*){
+void *swot(void *args){
+    int chick_num = *((int*) args);
     int time;
     while(1){
         time = get_wait_time(egg_dist);
         sleep(time);
         pthread_mutex_lock(&mutex);
         eggs_amount++;
+        printf("La gallina %d puso un huevo, cantidad de huevos: %d\n",chick_num,eggs_amount);
         pthread_mutex_unlock(&mutex);
     }
     return NULL;
@@ -171,9 +127,9 @@ void *chicken_process(void * args){
     printf("Creating chicken #%d\n",chick_num);
     pthread_t eat_thread, drink_thread, swot_thread;
 
-    pthread_create(&eat_thread, NULL, &eat, NULL);
-    pthread_create(&drink_thread, NULL, &drink, NULL);
-    pthread_create(&swot_thread, NULL, &swot, NULL);
+    pthread_create(&eat_thread, NULL, &eat, args);
+    pthread_create(&drink_thread, NULL, &drink, args);
+    pthread_create(&swot_thread, NULL, &swot, args);
 
     return NULL;
 }
@@ -187,22 +143,69 @@ void create_chickens(){
         *id = cn+1;
         pthread_create(&chickens[cn], NULL, &chicken_process, (void *) id);
     }
-
 }
 
-int main()
-{
+void read_input(){
+    freopen("input","r",stdin);
+    int input[12], cont = 0;
+    while(scanf("%d",&input[cont++]) != EOF);
 
+    //Setting necessary variables
+    food_amount = input[0];
+    FOOD_MAX = input[1];
+    FOOD_MIN = input[2];
+    FOOD_COST = input[3];
+    water_amount = input[4];
+    WATER_MAX = input[5];
+    WATER_MIN = input[6];
+    WATER_COST = input[7];
+    CHICKENS_AMOUNT = input[8];
+}
+
+
+/*
+void nivlemProc() {
+    clock_t last = clock();
+
+    while (1) {
+        clock_t current = clock();
+        pthread_mutex_lock(&mutex);
+        if ((current >= (last + NIVLEM_WAIT * CLOCKS_PER_SEC))) {
+            printf("Han pasado 6 horas, se recogeran los huevos\n");
+            egg_amount = 0;
+            last = current;
+        }
+        else if (egg_amount >= EGG_MAX_ALLOWED) {
+            printf("Se llego al maximo de huevos en la canasta, se recogeran\n");
+            egg_amount = 0;
+            last = current;
+        }
+        pthread_mutex_unlock(&mutex);
+    }
+}
+ */
+
+void *count_days(){
+    int day=1;
+    while(1){
+        printf("Dia numero:%d ...\n",day++);
+        sleep(DAY_DURATION);
+    }
+    return NULL;
+}
+
+int main(){
 
     srand(time(NULL)); // Seed for random.
+    read_input();
+    pthread_t days_count;
+    pthread_create(&days_count,NULL,&count_days,NULL);
 
     egg_dist = calcdistr(7);
     water_dist = calcdistr(5);
     food_dist = calcdistr(6);
 
-
     pthread_t bot;
-
     pthread_create(&bot, NULL, &bot_function, NULL);
 
     create_chickens();
