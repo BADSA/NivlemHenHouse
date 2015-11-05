@@ -5,7 +5,7 @@
 #include "utils.h"
 #include <math.h>
 #include <stdlib.h>
-
+#define e 2.718281828459046
 
 
 

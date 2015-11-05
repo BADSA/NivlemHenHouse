@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <map>
+#include <allegro5/allegro.h>
 
 using namespace std;
 
@@ -22,8 +23,14 @@ int WATER_COST = 40, FOOD_COST = 100;
 int FOOD_MIN = 2, WATER_MIN = 1;
 int CHICKENS_AMOUNT = 10;
 int cost = 0, eggs_amount = 0;
-int DAY_DURATION = 168000;
+int DAY_DURATION = 288;
+int FOOD_INTAKE[2], WATER_INTAKE[2];
+int EGGS_MAX, SIMULATION_TIME;
+int total_eggs;
+int HOURS_NIVLEM = 6;
+int NIVLEM_TIMER;
 
+clock_t START_TIME;
 /*
     Keep checking the food to refill it
     when it reaches the minimun.
@@ -77,7 +84,7 @@ void *eat(void *args){
     while(1){
         time = get_wait_time(food_dist);
         sleep(time);
-        amount = ( rand() % (food_amount - FOOD_MIN))+ FOOD_MIN; // Random amount of food.
+        amount = ( rand() % (FOOD_INTAKE[1] - FOOD_INTAKE[0]))+ FOOD_INTAKE[0]; // Random amount of food.
         pthread_mutex_lock(&mutex);
         food_amount -= amount;
 
@@ -96,13 +103,13 @@ void *drink(void *args){
     while(1){
         time = get_wait_time(water_dist);
         sleep(time);
-        amount = ( rand() % (water_amount - WATER_MIN))+ WATER_MIN; // Random amount of food.
+        amount = ( rand() % (WATER_INTAKE[1] - WATER_INTAKE[0]))+ WATER_INTAKE[0]; // Random amount of food.
         pthread_mutex_lock(&mutex);
         water_amount -= amount;
 
         if(water_amount <= WATER_MIN)
             pthread_cond_signal(&water_cond); // For the bot to refill it.
-        printf("La gallina %d tomo' %d agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
+        printf("La gallina %d tomo' %d mililitros agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
         pthread_mutex_unlock(&mutex);
     }
     return NULL;
@@ -116,6 +123,12 @@ void *swot(void *args){
         sleep(time);
         pthread_mutex_lock(&mutex);
         eggs_amount++;
+        if(eggs_amount >= EGGS_MAX){
+            printf("La canasta se ha llenado, Nivlem recogera' los huevos\n");
+            pthread_cond_signal(&nivlem_cond);
+        }
+
+
         printf("La gallina %d puso un huevo, cantidad de huevos: %d\n",chick_num,eggs_amount);
         pthread_mutex_unlock(&mutex);
     }
@@ -146,24 +159,54 @@ void create_chickens(){
 }
 
 void read_input(){
+    int water_lambda, food_lambda;
+    int eggs_lambda;
+
     freopen("input","r",stdin);
-    int input[12], cont = 0;
+
+    int input[15], cont = 0;
     while(scanf("%d",&input[cont++]) != EOF);
 
     //Setting necessary variables
-    food_amount = input[0];
-    FOOD_MAX = input[1];
-    FOOD_MIN = input[2];
-    FOOD_COST = input[3];
-    water_amount = input[4];
-    WATER_MAX = input[5];
-    WATER_MIN = input[6];
-    WATER_COST = input[7];
-    CHICKENS_AMOUNT = input[8];
+    water_lambda = input[0];
+    food_lambda = input[1];
+    eggs_lambda = input[2];
+
+    WATER_INTAKE[0] = input[3];
+    WATER_INTAKE[1] = input[4];
+    FOOD_INTAKE[0] = input[5];
+    FOOD_INTAKE[1] = input[6];
+
+    WATER_MIN = input[7];
+    WATER_MAX = input[8];
+
+    FOOD_MIN = input[9];
+    FOOD_MAX = input[10];
+
+    CHICKENS_AMOUNT = input[11];
+
+    EGGS_MAX = input[12];
+
+    WATER_COST = input[13];
+
+    FOOD_COST = input[14];
+
+    SIMULATION_TIME = input[15];
+
+
+    food_amount = FOOD_MAX;
+    water_amount = WATER_MAX;
+
+    water_dist = calcdistr(water_lambda);
+    food_dist = calcdistr(food_lambda);
+    egg_dist = calcdistr(eggs_lambda);
+
+    NIVLEM_TIMER = HOURS_NIVLEM * 3600;
+
 }
 
 
-/*
+/*  3600
 void nivlemProc() {
     clock_t last = clock();
 
@@ -172,10 +215,12 @@ void nivlemProc() {
         pthread_mutex_lock(&mutex);
         if ((current >= (last + NIVLEM_WAIT * CLOCKS_PER_SEC))) {
             printf("Han pasado 6 horas, se recogeran los huevos\n");
-            egg_amount = 0;
+            total_eggs += eggs_amount;
+            eggs_amount = 0;
+
             last = current;
         }
-        else if (egg_amount >= EGG_MAX_ALLOWED) {
+        else if (egg_amount >= EGGS_MAX) {
             printf("Se llego al maximo de huevos en la canasta, se recogeran\n");
             egg_amount = 0;
             last = current;
@@ -188,27 +233,62 @@ void nivlemProc() {
 void *count_days(){
     int day=1;
     while(1){
-        printf("Dia numero:%d ...\n",day++);
+        printf("Dia numero: %d ...\n",day++);
         sleep(DAY_DURATION);
     }
     return NULL;
 }
 
+void *wait_hours(){
+    while(1){
+        while(NIVLEM_TIMER--){
+            sleep(1);
+        }
+        printf("Ya ha pasado las %d horas, se recogeran los huevos\n",HOURS_NIVLEM);
+        pthread_cond_signal(&nivlem_cond);
+    }
+}
+
+
+void *nivlem_process(){
+    while(1){
+        pthread_cond_wait(&nivlem_cond, &mutex);
+        pthread_mutex_lock(&mutex);
+        NIVLEM_TIMER = 3600 * HOURS_NIVLEM;
+        total_eggs += eggs_amount;
+        eggs_amount = 0;
+        pthread_mutex_unlock(&mutex);
+    }
+}
+
+void *end_simulation(){
+    while(1){
+        clock_t current = clock();
+
+        if(current>= (START_TIME+SIMULATION_TIME * CLOCKS_PER_SEC)){
+            pthread_mutex_lock(&mutex);
+
+            printf("Cantidad de huevos: %d \n", eggs_amount);
+            printf("Costo total de la simulacio'n: %d \n", cost);
+            printf("Tiempo total de la simulacion: %d \n", SIMULATION_TIME);
+
+            pthread_mutex_unlock(&mutex);
+            exit(0);
+        }
+    }
+    return NULL;
+}
 int main(){
 
+    START_TIME = clock();
     srand(time(NULL)); // Seed for random.
     read_input();
     pthread_t days_count;
     pthread_create(&days_count,NULL,&count_days,NULL);
 
-    egg_dist = calcdistr(7);
-    water_dist = calcdistr(5);
-    food_dist = calcdistr(6);
-
     pthread_t bot;
     pthread_create(&bot, NULL, &bot_function, NULL);
 
     create_chickens();
-
     return 0;
 }
