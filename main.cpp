@@ -1,11 +1,35 @@
+/*
+
+    Instituto Tecnologico de Costa Rica
+    Principios de Sistemas Operativos
+    Profesor: Eddy Ramírez Jiménez
+    Proyecto 2 y 3: Nivlem hen house
+    Daniel Solís Méndez
+    Melvin Elizondo Pérez
+
+    ==========================DESCRIPCION===============================
+    Nivlem es un avicultor preocupado por automatizar todos los procesos
+    de su granja de pro- ducción de huevos, buscando tener control de los
+    costos de alimento y a la vez saber oportunamente cuando retirar los
+    huevos que se han producido.
+
+    El fin de esta simulación consiste en crear diferentes procesos los
+    cuales se deben de encargar de simular las gallinas, un bot que se
+    encarga de controlar la cantidad de agua y alimento que hay disponible
+    y que también lleva el costo total de dinero invertida en estos dos productos
+    y finalmente de Nivlem que debe de tener algún tipo de alarma para saber
+    cuándo recoger los huevos.
+
+*/
+
 #include <iostream>
 #include <vector>
 #include <stdio.h>
-#include "utils/utils.h"
 #include <unistd.h>
 #include <pthread.h>
 #include <map>
 #include <allegro5/allegro.h>
+#include "utils/utils.h"
 
 using namespace std;
 
@@ -31,11 +55,13 @@ int HOURS_NIVLEM = 6;
 int NIVLEM_TIMER;
 
 clock_t START_TIME;
+
+
 /*
     Keep checking the food to refill it
     when it reaches the minimun.
 */
-void* check_food(void*){
+void *check_food(void*){
     while(1) {
         pthread_mutex_lock(&mutex);
         while (food_amount > FOOD_MIN)
@@ -53,7 +79,7 @@ void* check_food(void*){
     Keep checking the water to refill it
     when it reaches the minimun.
 */
-void* check_water(void*){
+void *check_water(void*){
     while(1) {
         pthread_mutex_lock(&mutex);
         while (water_amount > WATER_MIN)
@@ -67,8 +93,8 @@ void* check_water(void*){
 
 
 /*
-Functions to check for min food and water.
-   in order to refill them
+    Functions to check for min food and water.
+    in order to refill them
 */
 void *bot_function(void*){
     pthread_t food_bot, water_bot;
@@ -77,7 +103,12 @@ void *bot_function(void*){
     return NULL;
 }
 
-
+/*
+    Eat function of the chickens.
+    Randomly eats an amount beetween
+    FOOD_INTAKE[0] (min) and
+    FOOD_INTAKE[1] (max).
+*/
 void *eat(void *args){
     int chick_num = *((int*) args);
     int time, amount;
@@ -97,6 +128,13 @@ void *eat(void *args){
     return NULL;
 }
 
+
+/*
+    Drink function of the chickens.
+    Randomly drinks an amount beetween
+    WATER_INTAKE[0] (min) and
+    WATER_INTAKE[1] (max).
+*/
 void *drink(void *args){
     int chick_num = *((int*) args);
     int time, amount;
@@ -115,6 +153,11 @@ void *drink(void *args){
     return NULL;
 }
 
+
+/*
+    Swot function of the chickens.
+    Randomly puts an egg.
+*/
 void *swot(void *args){
     int chick_num = *((int*) args);
     int time;
@@ -135,6 +178,11 @@ void *swot(void *args){
     return NULL;
 }
 
+
+/*
+    Process of each chicken.
+    Every chicken has a thread that runs this function.
+*/
 void *chicken_process(void * args){
     int chick_num = *((int*) args);
     printf("Creating chicken #%d\n",chick_num);
@@ -148,6 +196,9 @@ void *chicken_process(void * args){
 }
 
 
+/*
+    Creates a thread for all the N chickens.
+*/
 void create_chickens(){
     pthread_t *chickens = (pthread_t*) calloc(CHICKENS_AMOUNT, sizeof(pthread_t));
     int *id;
@@ -158,6 +209,11 @@ void create_chickens(){
     }
 }
 
+
+/*
+    Reads the values of the
+    configuration to run.
+*/
 void read_input(){
     int water_lambda, food_lambda;
     int eggs_lambda;
@@ -206,31 +262,12 @@ void read_input(){
 }
 
 
-/*  3600
-void nivlemProc() {
-    clock_t last = clock();
-
-    while (1) {
-        clock_t current = clock();
-        pthread_mutex_lock(&mutex);
-        if ((current >= (last + NIVLEM_WAIT * CLOCKS_PER_SEC))) {
-            printf("Han pasado 6 horas, se recogeran los huevos\n");
-            total_eggs += eggs_amount;
-            eggs_amount = 0;
-
-            last = current;
-        }
-        else if (egg_amount >= EGGS_MAX) {
-            printf("Se llego al maximo de huevos en la canasta, se recogeran\n");
-            egg_amount = 0;
-            last = current;
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-}
- */
-
-void *count_days(){
+/*
+    Thread function to count
+    the days that has passed since the
+    execution start.
+*/
+void *count_days(void*){
     int day=1;
     while(1){
         printf("Dia numero: %d ...\n",day++);
@@ -239,6 +276,11 @@ void *count_days(){
     return NULL;
 }
 
+
+/*
+    Waits "NIVLEM_TIMER" to wake up Nivlem
+    in order to pick the eggs.
+*/
 void *wait_hours(){
     while(1){
         while(NIVLEM_TIMER--){
@@ -249,23 +291,36 @@ void *wait_hours(){
     }
 }
 
-
-void *nivlem_process(){
+/*
+    Function that receives signal to
+    pick the eggs.
+*/
+void *nivlem_process(void*){
+    pthread_t hours_checker;
+    //pthread_create(&hours_checker, NULL, &wait_hours, NULL);
     while(1){
         pthread_cond_wait(&nivlem_cond, &mutex);
+
         pthread_mutex_lock(&mutex);
         NIVLEM_TIMER = 3600 * HOURS_NIVLEM;
         total_eggs += eggs_amount;
         eggs_amount = 0;
         pthread_mutex_unlock(&mutex);
+
     }
 }
 
-void *end_simulation(){
+
+/*
+    Checks whether or not
+    the simulation end.
+    Prints final Stats.
+*/
+void *check_simulation_end(void*){
     while(1){
         clock_t current = clock();
-
-        if(current>= (START_TIME+SIMULATION_TIME * CLOCKS_PER_SEC)){
+        cout <<"Running"<<endl;
+        if(current>= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
             pthread_mutex_lock(&mutex);
 
             printf("Cantidad de huevos: %d \n", eggs_amount);
@@ -273,16 +328,22 @@ void *end_simulation(){
             printf("Tiempo total de la simulacion: %d \n", SIMULATION_TIME);
 
             pthread_mutex_unlock(&mutex);
-            exit(0);
+            //exit(0);
         }
     }
     return NULL;
 }
-int main(){
 
-    START_TIME = clock();
+
+
+/*
+    STARTS HERE
+*/
+int main(){
     srand(time(NULL)); // Seed for random.
+    START_TIME = clock();
     read_input();
+    /*
     pthread_t days_count;
     pthread_create(&days_count,NULL,&count_days,NULL);
 
@@ -290,5 +351,13 @@ int main(){
     pthread_create(&bot, NULL, &bot_function, NULL);
 
     create_chickens();
+
+    pthread_t nivlem;
+    pthread_create(&nivlem, NULL, &nivlem_process, NULL);
+    */
+    cout << "Simulation time es "<<SIMULATION_TIME<<endl;
+    pthread_t end_checker;
+    pthread_create(&end_checker, NULL, &check_simulation_end, NULL);
+
     return 0;
 }
