@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <map>
-#include <allegro5/allegro.h>
+#include "utils/graphics.h"
 
 using namespace std;
 
@@ -29,7 +29,6 @@ int EGGS_MAX, SIMULATION_TIME;
 int total_eggs;
 int HOURS_NIVLEM = 6;
 int NIVLEM_TIMER;
-
 clock_t START_TIME;
 /*
     Keep checking the food to refill it
@@ -205,31 +204,6 @@ void read_input(){
 
 }
 
-
-/*  3600
-void nivlemProc() {
-    clock_t last = clock();
-
-    while (1) {
-        clock_t current = clock();
-        pthread_mutex_lock(&mutex);
-        if ((current >= (last + NIVLEM_WAIT * CLOCKS_PER_SEC))) {
-            printf("Han pasado 6 horas, se recogeran los huevos\n");
-            total_eggs += eggs_amount;
-            eggs_amount = 0;
-
-            last = current;
-        }
-        else if (egg_amount >= EGGS_MAX) {
-            printf("Se llego al maximo de huevos en la canasta, se recogeran\n");
-            egg_amount = 0;
-            last = current;
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-}
- */
-
 void *count_days(){
     int day=1;
     while(1){
@@ -278,9 +252,9 @@ void *end_simulation(){
     }
     return NULL;
 }
-int main(){
+int main(int argc, char **argv){
 
-    START_TIME = clock();
+/*START_TIME = clock();
     srand(time(NULL)); // Seed for random.
     read_input();
     pthread_t days_count;
@@ -289,6 +263,10 @@ int main(){
     pthread_t bot;
     pthread_create(&bot, NULL, &bot_function, NULL);
 
-    create_chickens();
+    create_chickens();*/
+
+    simulation_window();
+
+
     return 0;
 }
