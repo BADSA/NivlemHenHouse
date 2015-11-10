@@ -375,7 +375,7 @@ void *check_simulation_end(void*){
     STARTS HERE
 */
 int main(int argc, char **argv){
-
+    /*
     srand(time(NULL)); // Seed for random.
     START_TIME = clock();
     read_input();
@@ -410,7 +410,8 @@ int main(int argc, char **argv){
             exit(0);
         }
     }
-
+    */
+    simulation_window();
 
     return 0;
 }
