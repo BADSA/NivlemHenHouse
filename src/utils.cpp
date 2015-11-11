@@ -1,8 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "../include/externs.h"
-#include "../include/mathfunc.h"
 #include "../include/utils.h"
+
+
 
 void read_file() {
     int water_lambda, food_lambda;

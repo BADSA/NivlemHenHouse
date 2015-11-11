@@ -23,11 +23,12 @@
 */
 
 /* DEFINES */
-#include <vector>
-#define vd std::vector<double>
+#include "externs.h"
 
-#ifndef NIVLEMHENHOUSE_UTILS_H
-#define NIVLEMHENHOUSE_UTILS_H
+#define e 2.718281828459046
+
+#ifndef NIVLEMHENHOUSE_MATHFUNC_H
+#define NIVLEMHENHOUSE_MATHFUNC_H
 
 double calc_poisson(double k, double lambda);
 long long fact(int n);
@@ -35,4 +36,4 @@ vd calcdistr(int lambda);
 double getrand10();
 int get_wait_time(vd dist);
 
-#endif //NIVLEMHENHOUSE_UTILS_H
+#endif

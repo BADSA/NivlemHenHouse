@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <pthread.h>
-#include <unistd.h>
-#include "../include/externs.h"
 #include "../include/nivlem.h"
 
 

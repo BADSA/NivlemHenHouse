@@ -2,6 +2,7 @@
 // Created by melalonso on 11/10/15.
 //
 
+#include "chicken.h"
 #ifndef NIVLEMHENHOUSE_WORKFLOW_H
 #define NIVLEMHENHOUSE_WORKFLOW_H
 

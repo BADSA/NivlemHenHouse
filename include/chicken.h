@@ -1,7 +1,8 @@
 //
 // Created by melalonso on 11/10/15.
 //
-
+#include <iostream>
+#include "mathfunc.h"
 #ifndef NIVLEMHENHOUSE_CHICKEN_H
 #define NIVLEMHENHOUSE_CHICKEN_H
 

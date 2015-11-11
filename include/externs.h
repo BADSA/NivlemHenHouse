@@ -6,9 +6,15 @@
 #define NIVLEMHENHOUSE_EXTERNS_H
 
 #include <vector>
+#include <math.h>
+#include <stdlib.h>
 #include <time.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <vector>
+#define vd std::vector<double>
 
-#define vd std::vector <double>
 
 extern vd egg_dist, water_dist, food_dist;
 

@@ -202,7 +202,7 @@ void *move_chick_eat(void *args){
     pthread_mutex_unlock(&mutex2);
 }
 
-void init_sprite(sprite &spt, int diff, int y, char *img_path){
+void init_sprite(sprite &spt, int diff, int y, char const *img_path){
     spt.x = 150 + diff;
     spt.y = y;
     spt.speed = 5;
