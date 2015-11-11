@@ -1,10 +1,12 @@
 #ifndef NIVLEMHENHOUSE_GLOBALS_H
 #define NIVLEMHENHOUSE_GLOBALS_H
 
-#include "time.h"
+#include <time.h>
 #include <vector>
-
+#include <pthread.h>
+#include <vector>
 #define vd std::vector<double>
+
 
 vd egg_dist, water_dist, food_dist;
 

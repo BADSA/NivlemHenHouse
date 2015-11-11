@@ -1,9 +1,3 @@
-#include <iostream>
-#include <stdio.h>
-#include <pthread.h>
-#include <unistd.h>
-#include "../include/mathfunc.h"
-#include "../include/externs.h"
 #include "../include/chicken.h"
 
 /*

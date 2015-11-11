@@ -23,7 +23,6 @@
 */
 
 #include <iostream>
-#include <stdlib.h>
 #include "include/bot.h"
 #include "include/nivlem.h"
 #include "include/workflow.h"

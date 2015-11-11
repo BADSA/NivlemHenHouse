@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <pthread.h>
-#include "../include/externs.h"
 #include "../include/bot.h"
 
 /*

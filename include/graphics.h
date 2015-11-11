@@ -32,7 +32,7 @@ struct sprite {
 
 
 int simulation_window(void);
-void init_sprite(sprite &spt, int diff, int y, char *img_path);
+void init_sprite(sprite &spt, int diff, int y, char const *img_path);
 void *move_chick_eat(void *args);
 void *move_chick_drink(void *args);
 
