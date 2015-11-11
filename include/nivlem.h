@@ -1,0 +1,11 @@
+//
+// Created by melalonso on 11/10/15.
+//
+
+#ifndef NIVLEMHENHOUSE_NIVLEM_H
+#define NIVLEMHENHOUSE_NIVLEM_H
+
+void *nivlem_process(void*);
+void *wait_hours(void*);
+
+#endif //NIVLEMHENHOUSE_NIVLEM_H

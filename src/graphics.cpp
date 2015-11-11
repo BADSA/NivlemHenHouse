@@ -1,4 +1,4 @@
-#include "graphics.h"
+#include "../include/graphics.h"
 
 int STATUS = 1;
 bool done = false, render = false;
@@ -6,13 +6,17 @@ bool keyPressed = false;
 bool keys[] = {false, false, false,false, false, false};
 enum KEYS{LEFT, RIGHT, UP, DOWN, SPACE, ENTER};
 
+pthread_mutex_t	mutex2 = PTHREAD_MUTEX_INITIALIZER;
+
 int simulation_window(){
-    ALLEGRO_DISPLAY *display = NULL;
+    ALLEGRO_DISPLAY *display, *display2, *display3 = NULL;
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_BITMAP *bg = NULL;
     ALLEGRO_TIMER *timer;
     al_init(); // I'm not checking the return value for simplicity.
     display = al_create_display(WIDTH, HEIGHT);
+    //display2 = al_create_display(WIDTH, HEIGHT);
+    //display3 = al_create_display(WIDTH, HEIGHT);
 
     //==============================================
     //ADDON INSTALL
@@ -32,7 +36,7 @@ int simulation_window(){
     ALLEGRO_FONT *font20 = al_load_ttf_font("resources/fonts/pirulen.ttf",20,0 );
     ALLEGRO_FONT *font15 = al_load_ttf_font("resources/fonts/pirulen.ttf",15,0 );
     ALLEGRO_FONT *font10 = al_load_ttf_font("resources/fonts/pirulen.ttf",10,0 );
-    ALLEGRO_DISPLAY_MODE   disp_data;
+    ALLEGRO_DISPLAY_MODE disp_data;
 
     ALLEGRO_COLOR color_start_s = GRAY_SELECTED;
     ALLEGRO_COLOR color_exit_s = GRAY;
@@ -45,14 +49,27 @@ int simulation_window(){
     int menu_selected = M_START;
     al_start_timer(timer);
 
-    struct Chicken chk;
-    init_chicken(chk);
+    /*
+    ==================================
+        Sprites for the Hen House
+    ==================================
+    */
+    sprite chk[3];
+    sprite food[3];
+    sprite water[3];
+    int width_diff = 0;
+    for (int i=0; i<3;i++){
+        init_sprite(chk[i], width_diff, 200, "img/chicken2.png");
+        init_sprite(food[i], width_diff, 350, "img/food.png");
+        init_sprite(water[i], width_diff, 50, "img/water.png");
+        width_diff += 70;
+    }
 
 
     while(!done) {
         al_wait_for_event(event_queue, &ev);
 
-        if (STATUS == 1) {
+        if (STATUS == MENU) {
 
             if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
                 switch (ev.keyboard.keycode) {
@@ -72,21 +89,24 @@ int simulation_window(){
                         break;
                 }
                 keyPressed = true;
-            }
-            else if (ev.type == ALLEGRO_EVENT_KEY_UP) {
+
+
+            } else if (ev.type == ALLEGRO_EVENT_KEY_UP) {
                 switch (ev.keyboard.keycode) {
                     case ALLEGRO_KEY_ENTER:
                         keys[ENTER] = false;
                         break;
                 }
+
             } else if (ev.type == ALLEGRO_EVENT_TIMER) {
                 render = true;
                 if (keyPressed) {
                     if (keys[ENTER]) {
                         if (menu_selected == M_START) {
 
-                            STATUS = 2;
+                            STATUS = SIMULATION;
                             printf("Inicio de la simulacion\n");
+
 
                         } else if (menu_selected == M_EXIT) {
                             done = true;
@@ -121,17 +141,12 @@ int simulation_window(){
 
             }
 
-        }else if (STATUS==2){
+        }else if (STATUS == SIMULATION){
 
             if(ev.type == ALLEGRO_EVENT_KEY_DOWN){
                 switch(ev.keyboard.keycode){
                     case ALLEGRO_KEY_ESCAPE:
-                        STATUS = 1;
-                        break;
-                    case ALLEGRO_KEY_BACKSPACE:
-                        pthread_t t;
-                        pthread_create (&t, NULL, &move_chick_eat, (void *)&chk );
-
+                        STATUS = MENU;
                         break;
                 }
                 keys[ENTER] = false;
@@ -140,18 +155,19 @@ int simulation_window(){
             render = true;
 
             //==============================================
-            //RENDER
+            //                  RENDER
             //==============================================
-            if(render && al_is_event_queue_empty(event_queue))
-            {
+            if(render && al_is_event_queue_empty(event_queue)) {
                 render = false;
 
-                al_draw_text(font(25), GREEN, WIDTH/2 - 110, ALLEGRO_ALIGN_CENTER, 0, "Iniciando: ");
+                al_draw_text(font20, GREEN, WIDTH/2 - 110, ALLEGRO_ALIGN_CENTER, 0, "Iniciando: ");
 
                 //al_draw_bitmap(bg, 0, 0, 0);
-                al_draw_bitmap(al_load_bitmap("img/c0dxhIv.png"), 200, 50, 0);
-                al_draw_bitmap(al_load_bitmap("img/food.png"), 200,350, 0);
-                al_draw_bitmap(chk.image, 210,chk.y, 0);
+                for (int i = 0; i<3; i++){
+                    al_draw_bitmap(chk[i].image, chk[i].x ,chk[i].y, 0);
+                    al_draw_bitmap(food[i].image, food[i].x ,food[i].y, 0);
+                    al_draw_bitmap(water[i].image, water[i].x ,water[i].y, 0);
+                }
 
 
                 al_draw_text(font_copy, GRAY, 30,450, 0, "BADSA Corp 2015");
@@ -168,29 +184,29 @@ int simulation_window(){
 
 
 void *move_chick_eat(void *args){
-    struct Chicken *chick = (Chicken *) args;
+    struct sprite *chick = (sprite *) args;
 
-    printf("Moviendo gallina\n");
+    pthread_mutex_lock(&mutex2);
     double curr_pos = chick->y;
-    while(chick->y > 50)
+    while(chick->y > 50){
+        int ran = rand();
+        usleep(5000+ran%10000);
         chick->y -= chick->speed;
-    while(chick->y < curr_pos)
+    }
+    usleep(300000);
+    while(chick->y < curr_pos){
+        int ran = rand();
+        usleep(5000+ran%10000);
         chick->y += chick->speed;
+    }
+    pthread_mutex_unlock(&mutex2);
 }
 
-void move_chick_drink(Chicken &chick) {
-    double curr_pos = chick.y;
-    while(chick.y < 350)
-        chick.y += chick.speed;
-    while(chick.y > curr_pos)
-        chick.y -= chick.speed;
-}
-
-void init_chicken(Chicken &chick){
-    chick.x = WIDTH / 2;
-    chick.y = 200;
-    chick.speed = 5;
-    chick.image = al_load_bitmap("img/chicken2.png");
-    chick.w = al_get_bitmap_width(chick.image);
-    chick.h = al_get_bitmap_height(chick.image);
+void init_sprite(sprite &spt, int diff, int y, char *img_path){
+    spt.x = 150 + diff;
+    spt.y = y;
+    spt.speed = 5;
+    spt.image = al_load_bitmap(img_path);
+    spt.w = al_get_bitmap_width(spt.image);
+    spt.h = al_get_bitmap_height(spt.image);
 }
