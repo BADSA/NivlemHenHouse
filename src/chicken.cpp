@@ -38,6 +38,8 @@ void *eat(void *args){
 
         printf("La gallina %d comió %d de alimento, la cantidad total de comida es: %d \n",chick_num,amount,food_amount);
         pthread_mutex_unlock(&mutex);
+        pthread_t chicken;
+        pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[0]);
     }
     return NULL;
 }
@@ -63,6 +65,8 @@ void *drink(void *args){
             pthread_cond_signal(&water_cond); // For the bot to refill it.
         printf("La gallina %d tomó %d mililitros agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
         pthread_mutex_unlock(&mutex);
+        pthread_t chicken;
+        pthread_create(&chicken, NULL, move_chick_drink, (void*) &chk[1]);
     }
     return NULL;
 }
@@ -90,6 +94,9 @@ void *swot(void *args){
         }
 
         pthread_mutex_unlock(&mutex);
+
+        pthread_t chicken;
+        pthread_create(&chicken, NULL, chick_swot, (void*) NULL);
     }
     return NULL;
 }

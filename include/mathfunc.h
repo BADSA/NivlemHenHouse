@@ -25,8 +25,6 @@
 /* DEFINES */
 #include "externs.h"
 
-#define e 2.718281828459046
-
 #ifndef NIVLEMHENHOUSE_MATHFUNC_H
 #define NIVLEMHENHOUSE_MATHFUNC_H
 
