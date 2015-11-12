@@ -3,7 +3,6 @@
 //
 #include <iostream>
 #include "mathfunc.h"
-#include "graphics.h"
 
 #ifndef NIVLEMHENHOUSE_CHICKEN_H
 #define NIVLEMHENHOUSE_CHICKEN_H

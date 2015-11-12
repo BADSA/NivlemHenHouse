@@ -33,9 +33,11 @@ struct sprite {
 
 int simulation_window();
 void *stats_window(void *args);
+void *nivlem_window(void *args);
 void init_sprite(sprite &spt, int diff, int y, char const *img_path);
 void *move_chick_eat(void *args);
 void *move_chick_drink(void *args);
+void *move_nivlem(void *args);
 void *chick_swot(void *args);
 
 #endif //NIVLEMHENHOUSE_GRAPHICS_H

@@ -25,6 +25,10 @@ void *nivlem_process(void*){
 
         pthread_mutex_unlock(&mutex);
 
+        pthread_t melvin_rev;
+        pthread_create(&melvin_rev, NULL, move_nivlem, (void*) &nivlem);
+
+
     }
 }
 
