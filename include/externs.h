@@ -1,18 +1,14 @@
-//
-// Created by melalonso on 11/11/15.
-//
-
 #ifndef NIVLEMHENHOUSE_EXTERNS_H
 #define NIVLEMHENHOUSE_EXTERNS_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 #include <math.h>
-#include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <vector>
+
 #define vd std::vector<double>
 
 

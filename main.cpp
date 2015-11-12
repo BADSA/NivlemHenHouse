@@ -32,26 +32,16 @@
 
 using namespace std;
 
-int main(int argc, char **argv){
-
+void *start_simulation(void*){
     srand(time(NULL)); // Seed for random.
     START_TIME = clock();
-
     read_file();
-
-    pthread_t bot;
+    pthread_t bot, days_count, nivlem;
     pthread_create(&bot, NULL, &bot_function, NULL);
-
     create_chickens();
-
-    pthread_t days_count;
     pthread_create(&days_count,NULL,&count_days,NULL);
-
-    pthread_t nivlem;
     pthread_create(&nivlem, NULL, &nivlem_process, NULL);
 
-
-    printf("Running\n");
     while(1){
         clock_t current = clock();
         if(current>= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
@@ -67,6 +57,10 @@ int main(int argc, char **argv){
             exit(0);
         }
     }
+}
 
+int main(int argc, char **argv){
+
+    simulation_window();
     return 0;
 }
