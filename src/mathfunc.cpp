@@ -1,4 +1,5 @@
 #include "../include/mathfunc.h"
+#define e 2.718281828459046
 
 long long fact(int n){
     long long res = 1;
