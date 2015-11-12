@@ -1,12 +1,11 @@
 #include "../include/main.h"
-#include "../include/graphics.h"
 #include "../include/externs.h"
 
 int STATUS = MENU;
 bool done = false, render = false, keyPressed = false;
 bool keys[] = {false, false, false,false, false, false};
 enum KEYS {LEFT, RIGHT, UP, DOWN, SPACE, ENTER};
-sprite chk[3];
+sprite chk[3], nivlem;
 
 pthread_mutex_t	mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex3 = PTHREAD_MUTEX_INITIALIZER;
@@ -18,8 +17,11 @@ int simulation_window(){
     ALLEGRO_DISPLAY *display = NULL;
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_TIMER *timer;
+    ALLEGRO_BITMAP *bg = NULL;
     al_init(); // Initialize allegro.
+
     display = al_create_display(WIDTH, HEIGHT);
+    al_set_window_position(display, 440, 120);
     al_set_window_title(display, "Nivlem Hen House");
 
     /* ADDON INSTALL */
@@ -38,6 +40,8 @@ int simulation_window(){
 
     ALLEGRO_COLOR color_start_s = GRAY_SELECTED;
     ALLEGRO_COLOR color_exit_s = GRAY;
+
+    bg = al_load_bitmap("img/bg.jpg");
 
     event_queue = al_create_event_queue();
     timer = al_create_timer(1.0 / 60);
@@ -104,9 +108,10 @@ int simulation_window(){
                         if (menu_selected == M_START) {
                             STATUS = SIMULATION;
                             printf("Inicio de la simulacion\n");
-                            pthread_t sim, stats;
+                            pthread_t sim, stats, nivlem;
                             pthread_create(&sim, NULL, start_simulation, NULL);
                             pthread_create(&stats, NULL, stats_window, NULL);
+                            pthread_create(&nivlem, NULL, nivlem_window, NULL);
 
                         } else if (menu_selected == M_EXIT) {
                             done = true;
@@ -159,6 +164,7 @@ int simulation_window(){
             //==============================================
             if(render && al_is_event_queue_empty(event_queue)) {
                 render = false;
+                al_draw_bitmap(bg, 0, 0, 0);
 
                 al_draw_text(font20, GREEN, WIDTH/2 - 110, ALLEGRO_ALIGN_CENTER, 0, "Iniciando: ");
 
@@ -166,9 +172,9 @@ int simulation_window(){
                     al_draw_bitmap(egg.image, egg.x, egg.y, 0);
 
                 for (int i = 0; i<3; i++){
-                    al_draw_bitmap(chk[i].image, chk[i].x ,chk[i].y, 0);
                     al_draw_bitmap(food[i].image, food[i].x ,food[i].y, 0);
                     al_draw_bitmap(water[i].image, water[i].x ,water[i].y, 0);
+                    al_draw_bitmap(chk[i].image, chk[i].x ,chk[i].y, 0);
                 }
 
 
@@ -194,6 +200,7 @@ void *stats_window(void *args){
     al_init(); // Initialize allegro.
     //al_set_new_window_position(50,50);
     display = al_create_display(400, 500);
+    al_set_window_position(display, 20, 120);
     al_set_window_title(display, "Statistics");
 
     /* ADDON INSTALL */
@@ -237,6 +244,79 @@ void *stats_window(void *args){
         }
     }
     return NULL;
+}
+
+
+void *nivlem_window(void *args){
+    bool render = false;
+    ALLEGRO_DISPLAY *display = NULL;
+    ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+    ALLEGRO_TIMER *timer;
+    al_init(); // Initialize allegro.
+    display = al_create_display(400, 500);
+    al_set_window_position(display, 950, 120);
+    al_set_window_title(display, "Nivlem");
+
+    /* ADDON INSTALL */
+    al_install_keyboard();
+    al_init_image_addon();
+    al_init_font_addon();
+    al_init_ttf_addon();
+    al_init_primitives_addon();
+
+    // FONT DEL PROGRAMA.
+    ALLEGRO_FONT *font = al_load_ttf_font("resources/fonts/Sarpanch-SemiBold.ttf",30,0 );
+    ALLEGRO_FONT *font_copy = al_load_ttf_font("resources/fonts/Sarpanch-SemiBold.ttf",20,0 );
+
+    ALLEGRO_FONT *font30 = al_load_ttf_font("resources/fonts/pirulen.ttf",30,0 );
+    ALLEGRO_FONT *font20 = al_load_ttf_font("resources/fonts/pirulen.ttf",20,0 );
+
+    event_queue = al_create_event_queue();
+    timer = al_create_timer(1.0 / 60);
+    al_register_event_source(event_queue, al_get_timer_event_source(timer));
+    al_register_event_source(event_queue, al_get_keyboard_event_source());
+    ALLEGRO_EVENT ev;
+    al_start_timer(timer);
+
+    sprite cesta;
+    init_sprite(nivlem, 190, 165,"img/man.png");
+    init_sprite(cesta, -130, 175,"img/cesta.png");
+
+    while( !done ) {
+        al_wait_for_event(event_queue, &ev);
+        render = true;
+        if (render && al_is_event_queue_empty(event_queue)) {
+            render = false;
+            al_draw_text(font, GREEN, ALLEGRO_ALIGN_CENTER, 20, 0, " Nivlem ");
+
+            al_draw_bitmap(cesta.image, cesta.x, cesta.y, 0);
+            al_draw_bitmap(nivlem.image, nivlem.x, nivlem.y, 0);
+
+            al_flip_display();
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+        }
+    }
+    return NULL;
+}
+
+
+void *move_nivlem(void *args){
+    struct sprite *nivlem = (sprite *) args;
+
+    pthread_mutex_lock(&mutex2);
+    double curr_pos = nivlem->x;
+    while(nivlem->x > 25){
+        int ran = rand();
+        usleep(5000+ran%10000);
+        nivlem->x -= nivlem->speed;
+    }
+    usleep(300000);
+    while(nivlem->x < curr_pos){
+        int ran = rand();
+        usleep(5000+ran%10000);
+        nivlem->x += nivlem->speed;
+    }
+    pthread_mutex_unlock(&mutex2);
 }
 
 

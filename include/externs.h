@@ -8,6 +8,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include "graphics.h"
 
 #define vd std::vector<double>
 
@@ -33,5 +34,6 @@ extern pthread_mutex_t	mutex;
 extern pthread_cond_t water_cond;
 extern pthread_cond_t food_cond;
 extern pthread_cond_t nivlem_cond;
+
 
 #endif //NIVLEMHENHOUSE_EXTERNS_H
