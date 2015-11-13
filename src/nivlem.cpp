@@ -9,7 +9,7 @@ void *nivlem_process(void*){
     pthread_t hours_checker;
     pthread_create(&hours_checker, NULL, &wait_hours, NULL);
 
-    while(1){
+    while(simulation_active){
         pthread_mutex_lock(&mutex);
 
         while (eggs_amount < EGGS_MAX && NIVLEM_TIMER > 0)
@@ -38,12 +38,14 @@ void *nivlem_process(void*){
     in order to pick the eggs.
 */
 void *wait_hours(void*){
-    while(1){
+    while(simulation_active){
         while(NIVLEM_TIMER--){
             sleep(1);
         }
+        if(!simulation_active)
+            break;
         printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-        printf("+ Ya ha pasado las %d horas, se recogerán los huevos + \n",HOURS_NIVLEM);
+        printf("+ Ya ha pasado las %d horas, se recogerán los huevos + \n", HOURS_NIVLEM);
         printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
         pthread_cond_signal(&nivlem_cond);
     }

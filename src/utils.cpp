@@ -3,6 +3,7 @@
 
 
 void read_file() {
+
     int water_lambda, food_lambda;
     int eggs_lambda;
 

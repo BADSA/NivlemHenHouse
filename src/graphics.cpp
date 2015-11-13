@@ -6,6 +6,7 @@ bool done = false, render = false, keyPressed = false;
 bool keys[] = {false, false, false,false, false, false};
 enum KEYS {LEFT, RIGHT, UP, DOWN, SPACE, ENTER};
 sprite chk[3], nivlem, egg;
+bool auxiliar_display = false;
 
 pthread_mutex_t	mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex3 = PTHREAD_MUTEX_INITIALIZER;
@@ -109,6 +110,7 @@ int simulation_window(){
                             STATUS = SIMULATION;
                             printf("Inicio de la simulacion\n");
                             pthread_t sim, stats, nivlem;
+                            auxiliar_display = true;
                             pthread_create(&sim, NULL, start_simulation, NULL);
                             pthread_create(&stats, NULL, stats_window, NULL);
                             pthread_create(&nivlem, NULL, nivlem_window, NULL);
@@ -152,6 +154,7 @@ int simulation_window(){
                 switch(ev.keyboard.keycode){
                     case ALLEGRO_KEY_ESCAPE:
                         STATUS = MENU;
+                        auxiliar_display = false;
                         break;
                 }
                 keys[ENTER] = false;
@@ -190,8 +193,6 @@ int simulation_window(){
     return 0;
 }
 
-
-
 void *stats_window(void *args){
     bool render = false;
     ALLEGRO_DISPLAY *display = NULL;
@@ -199,7 +200,7 @@ void *stats_window(void *args){
     ALLEGRO_TIMER *timer;
     al_init(); // Initialize allegro.
     //al_set_new_window_position(50,50);
-    display = al_create_display(400, 500);
+    display = al_create_display(400, 400);
     al_set_window_position(display, 20, 120);
     al_set_window_title(display, "Statistics");
 
@@ -224,23 +225,49 @@ void *stats_window(void *args){
     ALLEGRO_EVENT ev;
     al_start_timer(timer);
 
-    while( !done ) {
+    while(auxiliar_display) {
         al_wait_for_event(event_queue, &ev);
-        render = true;
-        if (render && al_is_event_queue_empty(event_queue)) {
-            render = false;
+        clock_t current = clock();
+        float chronometer = (START_TIME + SIMULATION_TIME*CLOCKS_PER_SEC);
+        float total_seconds = (chronometer - current)/CLOCKS_PER_SEC;
+
+        int hours = total_seconds / 3600;
+        int minutes = total_seconds / 60;
+        int seconds = (int)total_seconds % 60;
+
+        if (al_is_event_queue_empty(event_queue)) {
             al_draw_text(font, GREEN, ALLEGRO_ALIGN_CENTER, 10, 0, "Nivlem Hen House STATS");
             al_draw_text(font20, GREEN, 20, 50, 0, "Cantidad de huevos");
-            char vartext[10];
+            if( current <= chronometer){
+                char time[10];
+                al_draw_text(font30, GREEN, 5, 260, 0, "Tiempo restante:" );
+                sprintf(time,"%d:%d:%d",hours,minutes,seconds);
+                al_draw_text(font30, GREEN, 120, 300, 0, time );
+            }else{
+                al_draw_text(font30, GREEN, 20, 300, 0, "Simulacion" );
+                al_draw_text(font30, GREEN, 20, 330, 0, "finalizada" );
+            }
+
+
+            char vartext[15];
             sprintf(vartext,"%d",total_eggs+eggs_amount);
             al_draw_text(font20, GREEN, 20, 70, 0, vartext);
 
-            al_draw_text(font20, GREEN, 20, 100, 0, "Costo total");
-            sprintf(vartext,"%d",cost);
+            al_draw_text(font20, GREEN, 20, 100, 0, "Total de agua");
+            sprintf(vartext,"%d",total_water);
             al_draw_text(font20, GREEN, 20, 120, 0, vartext);
+
+            al_draw_text(font20, GREEN, 20, 150, 0, "Total de alimento");
+            sprintf(vartext,"%d",total_food);
+            al_draw_text(font20, GREEN, 20, 170, 0, vartext);
+
+            al_draw_text(font20, GREEN, 20, 200, 0, "Costo total");
+            sprintf(vartext,"%d",cost);
+            al_draw_text(font20, GREEN, 20, 220, 0, vartext);
 
             al_flip_display();
             al_clear_to_color(al_map_rgb(0, 0, 0));
+            //al_rest(0.9);
         }
     }
     return NULL;
@@ -253,7 +280,7 @@ void *nivlem_window(void *args){
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_TIMER *timer;
     al_init(); // Initialize allegro.
-    display = al_create_display(400, 500);
+    display = al_create_display(510,300);
     al_set_window_position(display, 950, 120);
     al_set_window_title(display, "Nivlem");
 
@@ -278,22 +305,50 @@ void *nivlem_window(void *args){
     ALLEGRO_EVENT ev;
     al_start_timer(timer);
 
-    sprite cesta;
-    init_sprite(nivlem, 190, 165,"img/man.png");
+    sprite cesta, dollar_sign, mini_food, mini_water_bucket, egg_only;
+
+    init_sprite(dollar_sign,-130,75,"img/dollarsign.png");
+    init_sprite(mini_food,0,70,"img/minifood.png");
+    init_sprite(mini_water_bucket,130,70,"img/miniwater.png");
+    init_sprite(egg_only, 260, 70,"img/eggonly.png");
+    init_sprite(nivlem, 200, 165,"img/man.png");
     init_sprite(cesta, -130, 175,"img/cesta.png");
 
-    while( !done ) {
+    while(auxiliar_display) {
         al_wait_for_event(event_queue, &ev);
-        render = true;
-        if (render && al_is_event_queue_empty(event_queue)) {
-            render = false;
+        if (al_is_event_queue_empty(event_queue)) {
             al_draw_text(font, GREEN, ALLEGRO_ALIGN_CENTER, 20, 0, " Nivlem ");
+
+            char vartext[15];
+            char vartext1[15];
+            sprintf(vartext,"%d",cost);
+            al_draw_text(font20, GREEN,45,80, 0, vartext);
+
+            if(!food_amount)
+                strcpy(vartext1,"0");
+            sprintf(vartext1,"%d",food_amount);
+            al_draw_text(font20, GREEN,200,80, 0, vartext1);
+
+            if(!water_amount)
+                strcpy(vartext,"0");
+            sprintf(vartext,"%d",water_amount);
+            al_draw_text(font20, GREEN,330,80, 0, vartext);
+
+            sprintf(vartext1,"%d",eggs_amount);
+            al_draw_text(font20, GREEN,450,80, 0, vartext1);
+
+
 
             al_draw_bitmap(cesta.image, cesta.x, cesta.y, 0);
             al_draw_bitmap(nivlem.image, nivlem.x, nivlem.y, 0);
+            al_draw_bitmap(mini_food.image, mini_food.x, mini_food.y, 0);
+            al_draw_bitmap(mini_water_bucket.image, mini_water_bucket.x, mini_water_bucket.y, 0);
+            al_draw_bitmap(dollar_sign.image, dollar_sign.x, dollar_sign.y, 0);
+            al_draw_bitmap(egg_only.image, egg_only.x, egg_only.y, 0);
 
             al_flip_display();
             al_clear_to_color(al_map_rgb(0, 0, 0));
+            usleep(10);
         }
     }
     return NULL;
@@ -385,12 +440,10 @@ void init_sprite(sprite &spt, int diff, int y, char const *img_path){
 
 
 int get_available_chick( ){
-    //printf("chicken %d %d \n");
     pthread_mutex_lock(&mutex5);
     int i=0;
     while(1) {
         if (!chk[i].busy) {
-            printf("======================================================== chicken %d %d \n", i, chk[i].busy);
             chk[i].busy = true;
             pthread_mutex_unlock(&mutex5);
             return i;

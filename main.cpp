@@ -27,37 +27,34 @@
 #include "include/nivlem.h"
 #include "include/workflow.h"
 #include "include/utils.h"
-#include "include/mathfunc.h"
 #include "include/globals.h"
 
 
 using namespace std;
 
+void reset_values(){
+    total_eggs = 0;
+    cost = 0;
+    total_days = 1;
+    total_food = 0;
+    total_water = 0;
+    food_amount = 0;
+    eggs_amount = 0;
+}
+
 void *start_simulation(void*){
     srand(time(NULL)); // Seed for random.
     START_TIME = clock();
+    reset_values();
     read_file();
-    pthread_t bot, days_count, nivlem;
+    simulation_active = true;
+    pthread_t bot, days_count, nivlem_t, end_simulation;
     pthread_create(&bot, NULL, &bot_function, NULL);
     create_chickens();
     pthread_create(&days_count,NULL,&count_days,NULL);
-    pthread_create(&nivlem, NULL, &nivlem_process, NULL);
+    pthread_create(&nivlem_t, NULL, &nivlem_process, NULL);
+    pthread_create(&end_simulation, NULL, &check_simulation_end, NULL);
 
-    while(1){
-        clock_t current = clock();
-        if(current>= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
-            pthread_mutex_lock(&mutex);
-            printf("\nFIN DE LA SIMULACIÓN\n");
-            printf("=========================================\n");
-            printf("Cantidad de huevos: %d \n", eggs_amount + total_eggs);
-            printf("Costo total de la simulación: %d \n", cost);
-            printf("Duración en días: %d\n",total_days-1);
-            printf("Tiempo total de la simulación: %d \n", SIMULATION_TIME);
-
-            pthread_mutex_unlock(&mutex);
-            exit(0);
-        }
-    }
 }
 
 int main(int argc, char **argv){

@@ -26,11 +26,14 @@ void *chicken_process(void * args){
 void *eat(void *args){
     int chick_num = *((int*) args);
     int time, amount, chk_index;
-    while(1){
+    while(simulation_active){
         time = get_wait_time(food_dist);
         sleep(time);
+        if(!simulation_active)
+            break;
         amount = ( rand() % (FOOD_INTAKE[1] - FOOD_INTAKE[0]))+ FOOD_INTAKE[0]; // Random amount of food.
         pthread_mutex_lock(&mutex);
+        total_food += amount;
         food_amount -= amount;
 
         if(food_amount <= FOOD_MIN)
@@ -41,8 +44,6 @@ void *eat(void *args){
 
         chk_index = get_available_chick();
         chk[chk_index].busy = true;
-        printf("Chicken available index %d\n",chk_index);
-
 
         pthread_t chicken;
         pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[chk_index]);
@@ -60,11 +61,14 @@ void *eat(void *args){
 void *drink(void *args){
     int chick_num = *((int*) args);
     int time, amount, chk_index;
-    while(1){
+    while(simulation_active){
         time = get_wait_time(water_dist);
         sleep(time);
+        if(!simulation_active)
+            break;
         amount = ( rand() % (WATER_INTAKE[1] - WATER_INTAKE[0]))+ WATER_INTAKE[0]; // Random amount of food.
         pthread_mutex_lock(&mutex);
+        total_water+= amount;
         water_amount -= amount;
 
         if(water_amount <= WATER_MIN)
@@ -89,9 +93,11 @@ void *drink(void *args){
 void *swot(void *args){
     int chick_num = *((int*) args);
     int time, chk_index;
-    while(1){
+    while(simulation_active){
         time = get_wait_time(egg_dist);
         sleep(time);
+        if(!simulation_active)
+            break;
         pthread_mutex_lock(&mutex);
         eggs_amount++;
         printf("La gallina %d puso un huevo, cantidad de huevos: %d\n",chick_num,eggs_amount);

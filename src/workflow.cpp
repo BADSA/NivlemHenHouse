@@ -1,10 +1,10 @@
 #include "../include/workflow.h"
-
+pthread_t *chickens;
 /*
     Creates a thread for all the N chickens.
 */
 void create_chickens(){
-    pthread_t *chickens = (pthread_t*) calloc(CHICKENS_AMOUNT, sizeof(pthread_t));
+    chickens = (pthread_t*) calloc(CHICKENS_AMOUNT, sizeof(pthread_t));
     int *id;
     for (int cn = 0; cn < CHICKENS_AMOUNT; cn++){
         id = (int*)malloc(sizeof(int));
@@ -20,7 +20,7 @@ void create_chickens(){
     execution start.
 */
 void *count_days(void*){
-    while(1){
+    while(simulation_active){
         printf("\n##############################\n");
         printf("Dia numero: %d ...\n",total_days++);
         printf("##############################\n");
@@ -37,9 +37,9 @@ void *count_days(void*){
 */
 void *check_simulation_end(void*){
     printf("Running\n");
-    while(1){
+    while(simulation_active){
         clock_t current = clock();
-        if(current>= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
+        if(current >= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
             pthread_mutex_lock(&mutex);
             printf("\nFIN DE LA SIMULACIÓN\n");
             printf("=========================================\n");
@@ -47,9 +47,8 @@ void *check_simulation_end(void*){
             printf("Costo total de la simulación: %d \n", cost);
             printf("Duración en días: %d\n",total_days-1);
             printf("Tiempo total de la simulación: %d \n", SIMULATION_TIME);
-
+            simulation_active = false;
             pthread_mutex_unlock(&mutex);
-            exit(0);
         }
     }
     return NULL;
