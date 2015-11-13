@@ -22,7 +22,10 @@ int EGGS_MAX, SIMULATION_TIME;
 int total_eggs = 0;
 int HOURS_NIVLEM = 10;
 int total_days = 1;
+int total_food =0 ;
+int total_water = 0;
 int NIVLEM_TIMER;
+bool simulation_active;
 clock_t START_TIME;
 
 pthread_mutex_t	mutex      = PTHREAD_MUTEX_INITIALIZER;

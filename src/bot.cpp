@@ -17,7 +17,7 @@ void *bot_function(void*){
     when it reaches the minimun.
 */
 void *check_food(void*){
-    while(1) {
+    while(simulation_active) {
         pthread_mutex_lock(&mutex);
         while (food_amount > FOOD_MIN)
             pthread_cond_wait(&food_cond, &mutex);
@@ -43,7 +43,7 @@ void *check_food(void*){
     when it reaches the minimun.
 */
 void *check_water(void*){
-    while(1) {
+    while(simulation_active) {
         pthread_mutex_lock(&mutex);
         while (water_amount > WATER_MIN)
             pthread_cond_wait(&water_cond, &mutex);

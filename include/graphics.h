@@ -24,6 +24,7 @@ struct sprite {
     int w;
     int h;
     int speed;
+    bool busy;
     ALLEGRO_BITMAP *image;
 };
 
@@ -39,5 +40,6 @@ void *move_chick_eat(void *args);
 void *move_chick_drink(void *args);
 void *move_nivlem(void *args);
 void *chick_swot(void *args);
+int get_available_chick();
 
 #endif //NIVLEMHENHOUSE_GRAPHICS_H

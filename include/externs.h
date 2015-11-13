@@ -29,6 +29,9 @@ extern int HOURS_NIVLEM;
 extern int total_days;
 extern int NIVLEM_TIMER;
 extern clock_t START_TIME;
+extern int total_food;
+extern int total_water;
+extern bool simulation_active;
 
 extern pthread_mutex_t	mutex;
 extern pthread_cond_t water_cond;
