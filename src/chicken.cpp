@@ -25,7 +25,7 @@ void *chicken_process(void * args){
 */
 void *eat(void *args){
     int chick_num = *((int*) args);
-    int time, amount;
+    int time, amount, chk_index;
     while(1){
         time = get_wait_time(food_dist);
         sleep(time);
@@ -36,10 +36,16 @@ void *eat(void *args){
         if(food_amount <= FOOD_MIN)
             pthread_cond_signal(&food_cond); // For the bot to refill it.
 
-        printf("La gallina %d comió %d de alimento, la cantidad total de comida es: %d \n",chick_num,amount,food_amount);
+        printf("La gallina %d comió %d de alimento, la cantidad total de comida es: %d \n", chick_num, amount, food_amount);
         pthread_mutex_unlock(&mutex);
+
+        chk_index = get_available_chick();
+        chk[chk_index].busy = true;
+        printf("Chicken available index %d\n",chk_index);
+
+
         pthread_t chicken;
-        pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[0]);
+        pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[chk_index]);
     }
     return NULL;
 }
@@ -53,7 +59,7 @@ void *eat(void *args){
 */
 void *drink(void *args){
     int chick_num = *((int*) args);
-    int time, amount;
+    int time, amount, chk_index;
     while(1){
         time = get_wait_time(water_dist);
         sleep(time);
@@ -65,8 +71,12 @@ void *drink(void *args){
             pthread_cond_signal(&water_cond); // For the bot to refill it.
         printf("La gallina %d tomó %d mililitros agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
         pthread_mutex_unlock(&mutex);
+        chk_index = get_available_chick();
+        chk[chk_index].busy = true;
+
         pthread_t chicken;
-        pthread_create(&chicken, NULL, move_chick_drink, (void*) &chk[1]);
+        pthread_create(&chicken, NULL, move_chick_drink, (void*) &chk[chk_index]);
+
     }
     return NULL;
 }
@@ -78,7 +88,7 @@ void *drink(void *args){
 */
 void *swot(void *args){
     int chick_num = *((int*) args);
-    int time;
+    int time, chk_index;
     while(1){
         time = get_wait_time(egg_dist);
         sleep(time);
@@ -94,9 +104,12 @@ void *swot(void *args){
         }
 
         pthread_mutex_unlock(&mutex);
+        chk_index = get_available_chick();
+        chk[chick_num].busy = true;
+        pthread_mutex_unlock(&mutex);
 
         pthread_t chicken;
-        pthread_create(&chicken, NULL, chick_swot, (void*) NULL);
+        pthread_create(&chicken, NULL, chick_swot, &chk[chk_index]);
     }
     return NULL;
 }

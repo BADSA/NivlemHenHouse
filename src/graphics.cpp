@@ -5,11 +5,12 @@ int STATUS = MENU;
 bool done = false, render = false, keyPressed = false;
 bool keys[] = {false, false, false,false, false, false};
 enum KEYS {LEFT, RIGHT, UP, DOWN, SPACE, ENTER};
-sprite chk[3], nivlem;
+sprite chk[3], nivlem, egg;
 
 pthread_mutex_t	mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex3 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex4 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	mutex5 = PTHREAD_MUTEX_INITIALIZER;
 
 bool show_egg = false;
 
@@ -58,7 +59,6 @@ int simulation_window(){
     */
     sprite food[3];
     sprite water[3];
-    sprite egg;
     int width_diff = 0;
     for (int i=0; i<3;i++){
         init_sprite(chk[i], width_diff, 200, "img/chicken2.png");
@@ -187,7 +187,7 @@ int simulation_window(){
         }
 
     }
-    return NULL;
+    return 0;
 }
 
 
@@ -337,6 +337,7 @@ void *move_chick_eat(void *args){
         usleep(5000+ran%10000);
         chick->y += chick->speed;
     }
+    chick->busy = false;
     pthread_mutex_unlock(&mutex2);
 }
 
@@ -357,14 +358,18 @@ void *move_chick_drink(void *args){
         usleep(5000+ran%10000);
         chick->y -= chick->speed;
     }
+    chick->busy = false;
     pthread_mutex_unlock(&mutex3);
 }
 
 void *chick_swot(void *args){
+    struct sprite *chick = (sprite *) args;
     pthread_mutex_lock(&mutex4);
+    egg.x = chick->x;
     show_egg = true;
     usleep(30000);
     show_egg = false;
+    chick->busy = false;
     pthread_mutex_unlock(&mutex4);
 }
 
@@ -372,7 +377,26 @@ void init_sprite(sprite &spt, int diff, int y, char const *img_path){
     spt.x = 150 + diff;
     spt.y = y;
     spt.speed = 10;
+    spt.busy = false;
     spt.image = al_load_bitmap(img_path);
     spt.w = al_get_bitmap_width(spt.image);
     spt.h = al_get_bitmap_height(spt.image);
+}
+
+
+int get_available_chick( ){
+    //printf("chicken %d %d \n");
+    pthread_mutex_lock(&mutex5);
+    int i=0;
+    while(1) {
+        if (!chk[i].busy) {
+            printf("======================================================== chicken %d %d \n", i, chk[i].busy);
+            chk[i].busy = true;
+            pthread_mutex_unlock(&mutex5);
+            return i;
+        }
+        i++;
+        if (i % 3 == 0)
+            i = 0;
+    }
 }
