@@ -1,5 +1,7 @@
 #include "../include/main.h"
 #include "../include/externs.h"
+#include "../include/graphics.h"
+
 
 int STATUS = MENU;
 bool done = false, render = false, keyPressed = false;
@@ -111,9 +113,9 @@ int simulation_window(){
                             printf("Inicio de la simulacion\n");
                             pthread_t sim, stats, nivlem;
                             auxiliar_display = true;
-                            pthread_create(&sim, NULL, start_simulation, NULL);
-                            pthread_create(&stats, NULL, stats_window, NULL);
-                            pthread_create(&nivlem, NULL, nivlem_window, NULL);
+                            //pthread_create(&sim, NULL, start_simulation, NULL);
+                            //pthread_create(&stats, NULL, stats_window, NULL);
+                            //pthread_create(&nivlem, NULL, nivlem_window, NULL);
 
                         } else if (menu_selected == M_EXIT) {
                             done = true;

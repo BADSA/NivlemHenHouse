@@ -28,9 +28,18 @@ int NIVLEM_TIMER;
 bool simulation_active;
 clock_t START_TIME;
 
+int botsinfo_ssock;
+int botsinfo_csock;
+int henhouse_ssock;
+int henhouse_csock;
+int nivlen_ssock;
+int nivlen_csock; //client
+
 pthread_mutex_t	mutex      = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t water_cond  = PTHREAD_COND_INITIALIZER;
 pthread_cond_t food_cond   = PTHREAD_COND_INITIALIZER;
 pthread_cond_t nivlem_cond = PTHREAD_COND_INITIALIZER;
 
+
+bool water_fill, food_fill;
 #endif //NIVLEMHENHOUSE_GLOBALS_H

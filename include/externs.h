@@ -15,6 +15,7 @@
 
 extern vd egg_dist, water_dist, food_dist;
 
+
 extern int food_amount, FOOD_MAX;
 extern int water_amount, WATER_MAX;
 extern int WATER_COST, FOOD_COST;
@@ -39,4 +40,12 @@ extern pthread_cond_t food_cond;
 extern pthread_cond_t nivlem_cond;
 
 
+extern int botsinfo_ssock;
+extern int botsinfo_csock;
+extern int henhouse_ssock;
+extern int henhouse_csock;
+extern int nivlen_ssock;
+extern int nivlen_csock; //client
+
+extern bool water_fill, food_fill;
 #endif //NIVLEMHENHOUSE_EXTERNS_H

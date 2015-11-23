@@ -2,6 +2,7 @@
 // Created by melalonso on 11/10/15.
 //
 #include "externs.h"
+#include "graphics.h"
 
 #ifndef NIVLEMHENHOUSE_NIVLEM_H
 #define NIVLEMHENHOUSE_NIVLEM_H

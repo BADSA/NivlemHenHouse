@@ -1,4 +1,5 @@
 #include "../include/chicken.h"
+#include "../include/client.h"
 
 /*
     Process of each chicken.
@@ -35,18 +36,25 @@ void *eat(void *args){
         pthread_mutex_lock(&mutex);
         total_food += amount;
         food_amount -= amount;
-
-        if(food_amount <= FOOD_MIN)
-            pthread_cond_signal(&food_cond); // For the bot to refill it.
+        char message[256];
+        sprintf(message,"c-1-%d",amount);
+        send_message(botsinfo_ssock,message);
+        printf("Pegado en el condicional.................................. eat\n");
+        if(food_amount <= FOOD_MIN){
+            send_message(botsinfo_ssock, "c-4");
+            food_fill = true;
+            while(food_fill)pthread_cond_wait(&food_cond, &mutex);
+            //pthread_cond_signal(&water_cond); // For the bot to refill it
+        }
 
         printf("La gallina %d comió %d de alimento, la cantidad total de comida es: %d \n", chick_num, amount, food_amount);
         pthread_mutex_unlock(&mutex);
 
-        chk_index = get_available_chick();
-        chk[chk_index].busy = true;
+        //chk_index = get_available_chick();
+       // chk[chk_index].busy = true;
 
-        pthread_t chicken;
-        pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[chk_index]);
+        //pthread_t chicken;
+        //pthread_create(&chicken, NULL, move_chick_eat, (void*) &chk[chk_index]);
     }
     return NULL;
 }
@@ -70,16 +78,24 @@ void *drink(void *args){
         pthread_mutex_lock(&mutex);
         total_water+= amount;
         water_amount -= amount;
+        char message[256];
+        sprintf(message,"c-2-%d",amount);
+        send_message(botsinfo_ssock,message);
+        printf("Pegado en el condicional.................................. drink\n");
+        if(water_amount <= WATER_MIN){
+            send_message(botsinfo_ssock, "c-5");
+            water_fill = true;
+            while(water_fill)pthread_cond_wait(&water_cond, &mutex);
+            //pthread_cond_signal(&water_cond); // For the bot to refill it
+        }
 
-        if(water_amount <= WATER_MIN)
-            pthread_cond_signal(&water_cond); // For the bot to refill it.
         printf("La gallina %d tomó %d mililitros agua, la cantidad de agua total es: %d \n", chick_num, amount, water_amount);
         pthread_mutex_unlock(&mutex);
-        chk_index = get_available_chick();
-        chk[chk_index].busy = true;
+        ///chk_index = get_available_chick();
+        //chk[chk_index].busy = true;
 
-        pthread_t chicken;
-        pthread_create(&chicken, NULL, move_chick_drink, (void*) &chk[chk_index]);
+        //pthread_t chicken;
+        //pthread_create(&chicken, NULL, move_chick_drink, (void*) &chk[chk_index]);
 
     }
     return NULL;
@@ -102,20 +118,47 @@ void *swot(void *args){
         eggs_amount++;
         printf("La gallina %d puso un huevo, cantidad de huevos: %d\n",chick_num,eggs_amount);
 
+        send_message(botsinfo_ssock,"c-3");
+
         if(eggs_amount >= EGGS_MAX){
             printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
             printf("+ La canasta se ha llenado, Nivlem recogerá los huevos +\n");
             printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-            pthread_cond_signal(&nivlem_cond);
+            //send_message(botsinfo_ssock,"c-6");
+            //pthread_cond_signal(&nivlem_cond);
         }
 
         pthread_mutex_unlock(&mutex);
-        chk_index = get_available_chick();
-        chk[chick_num].busy = true;
-        pthread_mutex_unlock(&mutex);
+        //chk_index = get_available_chick();
+        //chk[chick_num].busy = true;
+        //pthread_mutex_unlock(&mutex);
 
-        pthread_t chicken;
-        pthread_create(&chicken, NULL, chick_swot, &chk[chk_index]);
+        //pthread_t chicken;
+        //pthread_create(&chicken, NULL, chick_swot, &chk[chk_index]);
     }
     return NULL;
+}
+
+void update_chicken_resources(char *data){
+    pthread_mutex_lock(&mutex);
+    int action = data[2]-48;
+    int value = atoi(data+4);
+    printf("ACTION:  %d  ===== \n",action);
+    printf("value:  %d  ===== \n",value);
+    switch (action){
+        case 1:
+            food_amount = value;
+            food_fill = false;
+            pthread_cond_signal(&food_cond);
+            pthread_mutex_unlock(&mutex);
+            break;
+        case 2:
+            water_amount = value;
+            water_fill = false;
+            pthread_cond_signal(&water_cond);
+            pthread_mutex_unlock(&mutex);
+            break;
+        default:
+            break;
+    }
 }

@@ -35,3 +35,16 @@ obj/
 
 .idea/
 *.pdf
+*.txt
+*.save
+*.cmake
+!CMakeLists.txt
+
+CMakeFiles/
+
+# Executables
+BotsInfo/BotsInfo
+
+HenHouse/HenHouse
+
+Makefile

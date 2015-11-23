@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include "mathfunc.h"
+#include "graphics.h"
 
 #ifndef NIVLEMHENHOUSE_CHICKEN_H
 #define NIVLEMHENHOUSE_CHICKEN_H
@@ -14,5 +15,5 @@ void *eat(void *args);
 void *drink(void *args);
 void *swot(void *args);
 void *chicken_process(void * args);
-
+void update_chicken_resources(char *data);
 #endif //NIVLEMHENHOUSE_CHICKEN_H
