@@ -18,6 +18,9 @@
 #define M_START 1
 #define M_EXIT 2
 
+#ifndef NIVLEMHENHOUSE_GRAPHICS_H
+#define NIVLEMHENHOUSE_GRAPHICS_H
+
 struct sprite {
     float x;
     float y;
@@ -27,10 +30,6 @@ struct sprite {
     bool busy;
     ALLEGRO_BITMAP *image;
 };
-
-#ifndef NIVLEMHENHOUSE_GRAPHICS_H
-#define NIVLEMHENHOUSE_GRAPHICS_H
-
 
 int simulation_window();
 void *stats_window(void *args);

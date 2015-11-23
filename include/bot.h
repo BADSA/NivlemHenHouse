@@ -8,5 +8,6 @@
 void *bot_function(void*);
 void *check_food(void*);
 void *check_water(void*);
+void update_general_values(char *data);
 
 #endif //NIVLEMHENHOUSE_BOT_H

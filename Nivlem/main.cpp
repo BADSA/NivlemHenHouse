@@ -23,37 +23,37 @@
 */
 
 #include <iostream>
-#include "include/bot.h"
-#include "include/nivlem.h"
-#include "include/workflow.h"
-#include "include/utils.h"
-#include "include/globals.h"
+#include "../include/bot.h"
+#include "../include/nivlem.h"
+#include "../include/workflow.h"
+#include "../include/utils.h"
+#include "../include/server.h"
+#include "../include/client.h"
+#include "../include/globals.h"
 
 
 using namespace std;
 
-void reset_values(){
-    total_eggs = 0;
-    cost = 0;
-    total_days = 1;
-    total_food = 0;
-    total_water = 0;
-    food_amount = 0;
-    eggs_amount = 0;
-}
+
 
 void *start_simulation(void*){
     srand(time(NULL)); // Seed for random.
     START_TIME = clock();
     reset_values();
-    read_file();
+    //read_file();
+    botsinfo_csock = init_client("localhost", 10002);
+    henhouse_csock = init_client("localhost", 10001);
+    nivlen_ssock = init_server(10000);
+    create_chickens();
+
+/*
     simulation_active = true;
     pthread_t bot, days_count, nivlem_t, end_simulation;
     pthread_create(&bot, NULL, &bot_function, NULL);
     create_chickens();
     pthread_create(&days_count,NULL,&count_days,NULL);
     pthread_create(&nivlem_t, NULL, &nivlem_process, NULL);
-    pthread_create(&end_simulation, NULL, &check_simulation_end, NULL);
+    pthread_create(&end_simulation, NULL, &check_simulation_end, NULL);*/
 
 }
 

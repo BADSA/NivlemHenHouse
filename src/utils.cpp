@@ -1,4 +1,6 @@
 #include "../include/utils.h"
+#include "../include/bot.h"
+#include "../include/chicken.h"
 
 
 
@@ -48,5 +50,44 @@ void read_file() {
     egg_dist = calcdistr(eggs_lambda);
 
     NIVLEM_TIMER = HOURS_NIVLEM;// * 3600;
+
+}
+
+void reset_values(){
+    total_eggs = 0;
+    cost = 0;
+    total_days = 1;
+    total_food = 0;
+    total_water = 0;
+    food_amount = 0;
+    eggs_amount = 0;
+    food_fill = false;
+    water_fill = false;
+}
+
+void error(const char *msg){
+    perror(msg);
+    exit(1);
+}
+
+void *parse_message(void *arg){
+
+    char* message = (char*) arg;
+
+    printf("Parsing message: %s\n", message);
+    char code = message[0];
+
+    switch (code){
+        case 'c':
+            update_general_values(message);
+            break;
+        case 'b':
+            update_chicken_resources(message);
+            break;
+        case 'n':
+            break;
+        default:
+            break;
+    }
 
 }

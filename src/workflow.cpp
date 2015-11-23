@@ -4,6 +4,7 @@ pthread_t *chickens;
     Creates a thread for all the N chickens.
 */
 void create_chickens(){
+    printf("%d\n ========================\n", CHICKENS_AMOUNT);
     chickens = (pthread_t*) calloc(CHICKENS_AMOUNT, sizeof(pthread_t));
     int *id;
     for (int cn = 0; cn < CHICKENS_AMOUNT; cn++){

@@ -8,5 +8,7 @@
 #define NIVLEMHENHOUSE_UTILS_H
 
 void read_file();
-
+void reset_values();
+void error(const char *msg);
+void *parse_message(void *arg);
 #endif //NIVLEMHENHOUSE_UTILS_H
