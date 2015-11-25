@@ -9,14 +9,15 @@
 #include <netinet/in.h>
 #include "../include/server.h"
 #include "../include/utils.h"
-#include "../include/bot.h"
 
 
-int init_server(int port_num){
+int sockfd, newsockfd, portno;
+socklen_t clilen;
+struct sockaddr_in serv_addr, cli_addr;
+
+void init_server(int port_num){
     printf("Starting connection at: %d\n", port_num);
-    int sockfd, newsockfd, portno;
-    socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
@@ -30,34 +31,103 @@ int init_server(int port_num){
         error("ERROR on binding");
     listen(sockfd,5);
     clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd,
+}
 
+int accept_connection(){
+    newsockfd = accept(sockfd,
                        (struct sockaddr *) &cli_addr,
                        &clilen);
 
     return newsockfd;
 }
 
-void *receive_messages(void *args){
-    //messages_params params = *((messages_params*)(args));
-    int sock = *((int*) args);
-    char message[256];
+char* get_message(int s){
+    int sock = s;
+    char message[21];
     int n;
-    while(1){
+
+    if (sock < 0)
+        error("ERROR on accept");
+    bzero(message,21);
+    //n = read(sock,buffer,20);
+    n = recv(sock,message,20,0);
+    if (n < 0)
+        error("ERROR reading from socket");
+    printf("Message: %s\n",message);
+    char* bufCopy = (char*) malloc(21 * sizeof(char));
+    message[n] = '\0';
+    strncpy(bufCopy, message, 20);
+
+    return bufCopy;
+}
+
+
+
+void *listen_bostinfo_msg(void *args){
+    int sock = *((int*) args);
+    char message[21];
+    int n;
+    while(simulation_active){
 
         if (sock < 0)
             error("ERROR on accept");
-        bzero(message,256);
-        //n = read(sock,buffer,255);
-        n = recv(sock,message,255,0);
+        bzero(message,21);
+        //n = read(sock,buffer,20);
+        n = recv(sock,message,20,0);
         if (n < 0)
             error("ERROR reading from socket");
         printf("Message: %s\n",message);
-        char* bufCopy = (char*) malloc(256 * sizeof(char));
+        char* bufCopy = (char*) malloc(21 * sizeof(char));
         message[n] = '\0';
         strncpy(bufCopy, message, 20);
         pthread_t requestTID;
-        pthread_create(&requestTID, NULL, &parse_message, (void*) bufCopy);
+        pthread_create(&requestTID, NULL, &parse_bootsinfo_msg, (void*) bufCopy);
+
+    }
+}
+
+void *listen_henhouse_msg(void *args){
+    int sock = *((int*) args);
+    char message[21];
+    int n;
+    while(simulation_active){
+
+        if (sock < 0)
+            error("ERROR on accept");
+        bzero(message,21);
+        //n = read(sock,buffer,20);
+        n = recv(sock,message,20,0);
+        if (n < 0)
+            error("ERROR reading from socket");
+        printf("Message: %s\n",message);
+        char* bufCopy = (char*) malloc(21 * sizeof(char));
+        message[n] = '\0';
+        strncpy(bufCopy, message, 20);
+
+        pthread_t requestTID;
+        pthread_create(&requestTID, NULL, &parse_henhouse_msg, (void*) bufCopy);
+
+    }
+}
+
+void *listen_nivlem_msg(void *args){
+    int sock = *((int*) args);
+    char message[21];
+    int n;
+    while(simulation_active){
+        if (sock < 0)
+            error("ERROR on accept");
+        bzero(message,21);
+        n = recv(sock,message,20,0);
+        if (n < 0)
+            error("ERROR reading from socket");
+
+        printf("Message: %s\n",message);
+        char* bufCopy = (char*) malloc(20 * sizeof(char));
+        message[n] = '\0';
+        strncpy(bufCopy, message, 20);
+        pthread_t requestTID;
+        pthread_create(&requestTID, NULL, &parse_nivlem_msg, (void*) bufCopy);
 
     }
 }

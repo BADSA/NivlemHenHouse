@@ -1,4 +1,5 @@
 #include "../include/nivlem.h"
+#include "../include/client.h"
 
 
 /*
@@ -15,13 +16,16 @@ void *nivlem_process(void*){
         while (eggs_amount < EGGS_MAX && NIVLEM_TIMER > 0)
             pthread_cond_wait(&nivlem_cond, &mutex);
 
+        if(!simulation_active)
+            break;
         NIVLEM_TIMER = HOURS_NIVLEM;//* 3600 ;
         printf("\n================ NIVLEM ====================\n");
         printf("Nivlem esta recogiendo los huevos...\n");
         printf("Se recogieron %d huevos.\n",eggs_amount);
         printf("============================================\n");
-        total_eggs += eggs_amount;
+        //total_eggs += eggs_amount;
         eggs_amount = 0;
+        send_message(henhouse_csock, "b-3");
 
         pthread_mutex_unlock(&mutex);
 

@@ -5,8 +5,12 @@
 #ifndef NIVLEMHENHOUSE_SERVER_H
 #define NIVLEMHENHOUSE_SERVER_H
 
-int init_server(int port_num);
-void *receive_messages(void *args);
+void init_server(int port_num);
+void *listen_bostinfo_msg(void *args);
+void *listen_henhouse_msg(void *args);
+void *listen_nivlem_msg(void *args);
+int accept_connection();
+char* get_message(int s);
 
 typedef struct s_message_params{
     int socket;

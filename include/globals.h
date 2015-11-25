@@ -26,8 +26,8 @@ int total_food =0 ;
 int total_water = 0;
 int NIVLEM_TIMER;
 bool simulation_active;
-clock_t START_TIME;
-
+time_t START_TIME;
+char TIME[50];
 int botsinfo_ssock;
 int botsinfo_csock;
 int henhouse_ssock;
@@ -39,7 +39,11 @@ pthread_mutex_t	mutex      = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t water_cond  = PTHREAD_COND_INITIALIZER;
 pthread_cond_t food_cond   = PTHREAD_COND_INITIALIZER;
 pthread_cond_t nivlem_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t eggs_cond = PTHREAD_COND_INITIALIZER;
 
+bool water_fill, food_fill, pick_eggs;
 
-bool water_fill, food_fill;
+#define NIVLEMPORT 10000
+#define BOTSPORT 10001
+#define HENHOUSEPORT 10002
 #endif //NIVLEMHENHOUSE_GLOBALS_H

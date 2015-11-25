@@ -6,7 +6,6 @@
     in order to refill them
 */
 
-pthread_mutex_t	mutex6      = PTHREAD_MUTEX_INITIALIZER;
 void *bot_function(void*){
     pthread_t food_bot, water_bot;
     pthread_create(&food_bot, NULL, &check_food, NULL);
@@ -29,12 +28,12 @@ void *check_food(void*){
         printf("La cantidad de comida ha llegado al mínimo\n");
         printf("Agregando %d más de comida\n",FOOD_MAX);
 
-        food_amount += FOOD_MAX;
+        food_amount = FOOD_MAX;
         cost += FOOD_COST;
 
         char message[256];
         sprintf(message,"b-1-%d",food_amount);
-        send_message(henhouse_ssock,message);
+        send_message(nivlen_csock,message);
 
         printf("Cantidad actual %d\n",food_amount);
         printf("===================================\n");
@@ -59,12 +58,12 @@ void *check_water(void*){
         printf("La cantidad de agua ha llegado al mínimo\n");
         printf("Agregando %d más de agua\n",WATER_MAX);
 
-        water_amount += WATER_MAX;
+        water_amount = WATER_MAX;
         cost += WATER_COST;
 
         char message[256];
         sprintf(message,"b-2-%d",water_amount);
-        send_message(henhouse_ssock,message);
+        send_message(nivlen_csock,message);
 
         printf("Cantidad actual %d\n",water_amount);
         printf("===================================\n");
@@ -83,17 +82,19 @@ void update_general_values(char *data){
         value = atoi(data+4);
     switch(action){
         case 1:
-            food_amount-= value;
+            food_amount -= value;
+            total_food += value;
             pthread_mutex_unlock(&mutex);
             break;
         case 2:
             water_amount-= value;
+            total_water+= value;
             pthread_mutex_unlock(&mutex);
             break;
         case 3:
-            eggs_amount++;
+            //eggs_amount++;
+            total_eggs++;
             pthread_mutex_unlock(&mutex);
-            break;
         case 4:
             pthread_cond_signal(&food_cond);
             pthread_mutex_unlock(&mutex);
@@ -101,6 +102,7 @@ void update_general_values(char *data){
         case 5:
             pthread_cond_signal(&water_cond);
             pthread_mutex_unlock(&mutex);
+            break;
         default:
             pthread_mutex_unlock(&mutex);
             break;

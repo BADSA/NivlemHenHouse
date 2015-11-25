@@ -1,4 +1,6 @@
 #include "../include/workflow.h"
+#include "../include/client.h"
+
 pthread_t *chickens;
 /*
     Creates a thread for all the N chickens.
@@ -38,19 +40,36 @@ void *count_days(void*){
 */
 void *check_simulation_end(void*){
     printf("Running\n");
+    time_t current;
     while(simulation_active){
-        clock_t current = clock();
-        if(current >= ( START_TIME + SIMULATION_TIME * CLOCKS_PER_SEC)){
+        current  = time(nullptr);
+        double result = SIMULATION_TIME - (difftime(current,START_TIME));
+        if(result <= 0){
             pthread_mutex_lock(&mutex);
             printf("\nFIN DE LA SIMULACIÓN\n");
             printf("=========================================\n");
-            printf("Cantidad de huevos: %d \n", eggs_amount + total_eggs);
+            printf("Cantidad de huevos: %d \n", total_eggs);
             printf("Costo total de la simulación: %d \n", cost);
             printf("Duración en días: %d\n",total_days-1);
             printf("Tiempo total de la simulación: %d \n", SIMULATION_TIME);
+            printf("TOtal eggs %d\n",total_eggs);
+            printf("egg_amount %d\n",eggs_amount);
             simulation_active = false;
             pthread_mutex_unlock(&mutex);
+            send_message(henhouse_csock,"x-0");
+            simulation_active = false;
+            break;
         }
+
     }
     return NULL;
+}
+
+void simulation_status(char *data){
+    printf("SIMULATION STATUS\n");
+    pthread_mutex_lock(&mutex);
+    simulation_active = false;
+    pthread_mutex_unlock(&mutex);
+
+
 }
