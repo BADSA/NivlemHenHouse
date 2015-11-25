@@ -1,39 +1,42 @@
 #include <iostream>
 #include <unistd.h>
+#include "../include/server.h"
 #include "../include/client.h"
 
 #include "../include/globals.h"
-#include "../include/server.h"
+
 #include "../include/utils.h"
 #include "../include/workflow.h"
 
 using namespace std;
 
+void *start_simulation(void*){;};
 
 int main(int argc, char const *argv[])
 {
-	botsinfo_csock = init_server(10002);
-    sleep(1);
-    botsinfo_ssock = init_client("localhost", 10001);
-
-    int *sock =(int*) malloc(sizeof(int));
-
-
-    *sock = botsinfo_csock;
-    pthread_t listen_botsinfo;
-    pthread_create(&listen_botsinfo, NULL,&receive_messages,(void*)sock);
-
-    char prueba[] = {"p-12"};
-    int val = atoi(prueba + 2);
-    read_file();
     simulation_active = true;
-    create_chickens();
-    while(simulation_active);
-    printf("%d\n",val);
-    printf("Henhouse server UP!!\n");
+    init_server(HENHOUSEPORT);
+    printf("Conection Waiting\n");
 
-    //close(socket);
-    //receive_messages(socket);
+    nivlen_ssock = accept_connection();
+
+    printf("Conection Acepted");
+    int *sock1 =(int*) malloc(sizeof(int));
+
+    *sock1 = nivlen_ssock;
+    pthread_t nivlem_listener;
+    pthread_create(&nivlem_listener, NULL, &listen_nivlem_msg,(void*)sock1);
+
+    // Send message to nivlem to identify
+    nivlen_csock = init_client("localhost",NIVLEMPORT);
+
+    send_message(nivlen_csock,"henhouse to nivlem");
+    reset_values();
+    read_file();
+    create_chickens();
+    henhouse_window();
+    /*
+    printf("Henhouse server UP!!\n");*/
 
 
     return 0;

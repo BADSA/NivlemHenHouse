@@ -23,13 +23,15 @@
 */
 
 #include <iostream>
+#include "../include/globals.h"
 #include "../include/bot.h"
 #include "../include/nivlem.h"
 #include "../include/workflow.h"
 #include "../include/utils.h"
 #include "../include/server.h"
 #include "../include/client.h"
-#include "../include/globals.h"
+
+#include <ctime>
 
 
 using namespace std;
@@ -37,28 +39,63 @@ using namespace std;
 
 
 void *start_simulation(void*){
-    srand(time(NULL)); // Seed for random.
-    START_TIME = clock();
-    reset_values();
-    //read_file();
-    botsinfo_csock = init_client("localhost", 10002);
-    henhouse_csock = init_client("localhost", 10001);
-    nivlen_ssock = init_server(10000);
-    create_chickens();
-
-/*
     simulation_active = true;
-    pthread_t bot, days_count, nivlem_t, end_simulation;
-    pthread_create(&bot, NULL, &bot_function, NULL);
-    create_chickens();
+    printf("EMPEZANDO SIMULACION \n");
+
+    //Sockets para send
+    init_server(NIVLEMPORT);
+
+    henhouse_csock = init_client("localhost", HENHOUSEPORT);
+
+    botsinfo_csock = init_client("localhost", BOTSPORT);
+
+    henhouse_ssock = accept_connection();
+    int *sock2 =(int*) malloc(sizeof(int));
+    *sock2 = henhouse_ssock;
+    pthread_t listen_henhouse;
+    pthread_create(&listen_henhouse, NULL,&listen_henhouse_msg,(void*)sock2);
+
+    sleep(1);
+    botsinfo_ssock = accept_connection();
+
+
+    printf("conexiones aceptadas\n");
+
+    int *sock1 =(int*) malloc(sizeof(int));
+
+
+
+
+
+    *sock1 = botsinfo_ssock;
+    pthread_t listen_botsinfo;
+    pthread_create(&listen_botsinfo, NULL,&listen_bostinfo_msg,(void*)sock1);
+
+
+
+    printf("Ready %d\n", henhouse_csock);
+    printf("Ready %d\n", botsinfo_csock);
+    send_message(henhouse_csock, "nivlem to henhouse");
+    send_message(botsinfo_csock, "nivlem to bot");
+
+    srand(time(NULL)); // Seed for random.
+
+    reset_values();
+    read_file();
+
+    START_TIME = std::time(nullptr);
+    simulation_active = true;
+    pthread_t days_count, nivlem_t, end_simulation;
     pthread_create(&days_count,NULL,&count_days,NULL);
     pthread_create(&nivlem_t, NULL, &nivlem_process, NULL);
-    pthread_create(&end_simulation, NULL, &check_simulation_end, NULL);*/
+    pthread_create(&end_simulation, NULL, &check_simulation_end, NULL);
+
 
 }
 
 int main(int argc, char **argv){
-
+    printf("Creando ventana de simulacion\n");
     simulation_window();
+    printf("Creada\n");
     return 0;
 }

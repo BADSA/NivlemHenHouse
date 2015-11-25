@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.0)
 project(NivlemHenHouse)
 
 INCLUDE_DIRECTORIES(/usr/lib/x86_64-linux-gnu)

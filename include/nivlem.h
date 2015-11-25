@@ -11,5 +11,5 @@ extern sprite nivlem;
 
 void *nivlem_process(void*);
 void *wait_hours(void*);
-
+void update_stats_values(char *data);
 #endif //NIVLEMHENHOUSE_NIVLEM_H

@@ -40,8 +40,9 @@ int init_client(char const argv[], int port_num)
 }
 
 void send_message(int sock, char const *message){
+    //printf("%s  =============================== sending message\n");
     int n;
-    n = write(sock,message,255);
+    n = send(sock,message,20,0);
     if (n < 0)
         error("ERROR writing to socket");
 };

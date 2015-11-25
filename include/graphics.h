@@ -32,8 +32,8 @@ struct sprite {
 };
 
 int simulation_window();
-void *stats_window(void *args);
-void *nivlem_window(void *args);
+int stats_window();
+int henhouse_window();
 void init_sprite(sprite &spt, int diff, int y, char const *img_path);
 void *move_chick_eat(void *args);
 void *move_chick_drink(void *args);

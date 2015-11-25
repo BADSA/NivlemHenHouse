@@ -10,5 +10,8 @@
 void read_file();
 void reset_values();
 void error(const char *msg);
-void *parse_message(void *arg);
+void *parse_bootsinfo_msg(void *arg);
+void *parse_henhouse_msg(void *arg);
+void *parse_nivlem_msg(void *arg);
+void simulation_status(char *data);
 #endif //NIVLEMHENHOUSE_UTILS_H
